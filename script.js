@@ -58,6 +58,50 @@ const lostProfiles = [
     date: "May 6",
     image: "assets/nori.svg",
     description: "Tuxedo cat with white socks, white whiskers, and a quiet temperament near Pine Avenue."
+  },
+  {
+    id: "lost-scout-demo",
+    name: "Scout",
+    type: "dog",
+    colors: ["white", "tan"],
+    area: "Lakeview District",
+    date: "PawBoost-style sample",
+    image: "assets/bean.svg",
+    source: "Demo sample",
+    description: "Small white and tan dog, curled ears, blue tag, last seen near a grocery parking lot in Lakeview District."
+  },
+  {
+    id: "lost-pepper-demo",
+    name: "Pepper",
+    type: "cat",
+    colors: ["black", "white"],
+    area: "Willow Creek",
+    date: "PawBoost-style sample",
+    image: "assets/nori.svg",
+    source: "Demo sample",
+    description: "Black and white cat with white paws and a narrow blaze on the nose. Shy, may hide under porches."
+  },
+  {
+    id: "lost-honey-demo",
+    name: "Honey",
+    type: "dog",
+    colors: ["golden", "cream"],
+    area: "Riverside Avenue",
+    date: "PawBoost-style sample",
+    image: "assets/milo.svg",
+    source: "Demo sample",
+    description: "Golden medium-size dog with cream chest markings, purple collar, friendly but easily startled by traffic."
+  },
+  {
+    id: "lost-misty-demo",
+    name: "Misty",
+    type: "cat",
+    colors: ["gray", "silver"],
+    area: "East Garden Apartments",
+    date: "PawBoost-style sample",
+    image: "assets/luna.svg",
+    source: "Demo sample",
+    description: "Silver gray cat with green eyes and a clipped ear. Last seen close to the East Garden apartment mailboxes."
   }
 ];
 
@@ -101,6 +145,50 @@ const foundReports = [
     date: "May 8",
     image: "assets/found-black-cat.svg",
     description: "Black cat with a small white mark under the chin hiding near parked cars on Cedar Lane."
+  },
+  {
+    id: "found-harness-dog-demo",
+    name: "Found near a trail entrance",
+    type: "dog",
+    colors: ["brown", "white"],
+    area: "Greenway Trail",
+    date: "PawBoost-style sample",
+    image: "assets/found-terrier.svg",
+    source: "Demo sample",
+    description: "Brown and white small dog wearing a red harness, found close to the Greenway Trail entrance."
+  },
+  {
+    id: "found-silver-cat-demo",
+    name: "Found behind apartments",
+    type: "cat",
+    colors: ["gray", "silver"],
+    area: "East Garden Apartments",
+    date: "PawBoost-style sample",
+    image: "assets/found-gray-cat.svg",
+    source: "Demo sample",
+    description: "Gray cat with bright green eyes found behind apartment buildings. Calm, hungry, and no visible collar."
+  },
+  {
+    id: "found-gold-dog-demo",
+    name: "Found by playground",
+    type: "dog",
+    colors: ["golden", "cream"],
+    area: "Riverside Avenue",
+    date: "PawBoost-style sample",
+    image: "assets/found-gold-dog.svg",
+    source: "Demo sample",
+    description: "Friendly golden dog with cream chest fur and a purple collar, found near the Riverside playground."
+  },
+  {
+    id: "found-tux-cat-demo",
+    name: "Found under porch",
+    type: "cat",
+    colors: ["black", "white"],
+    area: "Willow Creek",
+    date: "PawBoost-style sample",
+    image: "assets/found-black-cat.svg",
+    source: "Demo sample",
+    description: "Black and white cat with white paws found hiding under a porch in Willow Creek."
   }
 ];
 
@@ -428,6 +516,7 @@ function renderMatchGrid(results) {
           <span>${titleCase(profile.type)}</span>
           <span>${profile.area}</span>
           <span>${profile.date}</span>
+          ${profile.source ? `<span>${profile.source}</span>` : ""}
         </div>
         <p>${profile.description}</p>
         <button class="contact-button" type="button">Open profile</button>

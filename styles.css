@@ -209,6 +209,29 @@ h2 {
   border-radius: 8px;
 }
 
+.source-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 18px;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.source-note .eyebrow,
+.source-note p {
+  margin-bottom: 0;
+}
+
+.source-note p:last-child {
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
 .snapshot-heading {
   display: grid;
   align-content: center;
@@ -713,6 +736,7 @@ h2 {
 
 @media (max-width: 980px) {
   .snapshot-band,
+  .source-note,
   .workspace-grid,
   .results-layout {
     grid-template-columns: 1fr;
@@ -732,7 +756,8 @@ h2 {
 
   .topbar,
   .report-header,
-  .section-toolbar {
+  .section-toolbar,
+  .source-note {
     align-items: flex-start;
     flex-direction: column;
   }
