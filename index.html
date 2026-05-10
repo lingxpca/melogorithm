@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PetMatch Lost and Found</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="home-view view is-active" data-view="home" aria-labelledby="homeTitle">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">PetMatch desk</p>
+            <h1 id="homeTitle">Lost and found pet search</h1>
+          </div>
+          <div class="status-pill" aria-label="Open reports">
+            <span class="status-dot"></span>
+            42 active reports
+          </div>
+        </header>
+
+        <section class="choice-grid" aria-label="Choose report type">
+          <button class="choice-card choice-lost" type="button" data-mode="lost">
+            <span class="choice-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img">
+                <path d="M11 4a7 7 0 0 0-7 7c0 5 7 9 7 9s7-4 7-9a7 7 0 0 0-7-7Zm0 9.2A2.2 2.2 0 1 1 11 8.8a2.2 2.2 0 0 1 0 4.4Z"></path>
+                <path d="M18.7 5.6 21 3.3M20.7 7.8l2.8-.7M16.5 3.6l.7-2.8"></path>
+              </svg>
+            </span>
+            <span class="choice-copy">
+              <strong>Lost</strong>
+              <small>Create a lost pet profile and compare it with nearby found reports.</small>
+            </span>
+          </button>
+
+          <button class="choice-card choice-found" type="button" data-mode="found">
+            <span class="choice-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img">
+                <path d="M7.5 12.5 4 16v4h4l3.5-3.5"></path>
+                <path d="m13 4 7 7-8 8-7-7 8-8Z"></path>
+                <path d="m14.5 6.5 3 3"></path>
+              </svg>
+            </span>
+            <span class="choice-copy">
+              <strong>Found</strong>
+              <small>Upload the pet you found and search existing lost pet profiles.</small>
+            </span>
+          </button>
+        </section>
+
+        <section class="snapshot-band" aria-label="Recent profile snapshots">
+          <div class="snapshot-heading">
+            <p class="eyebrow">Currently searched</p>
+            <h2>Recent lost profiles</h2>
+          </div>
+          <div class="mini-profile-row" id="miniProfiles"></div>
+        </section>
+      </section>
+
+      <section class="report-view view" data-view="report" aria-labelledby="flowTitle">
+        <header class="report-header">
+          <button class="icon-button" type="button" data-action="home" aria-label="Back to choices">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 18 9 12l6-6"></path>
+            </svg>
+          </button>
+          <div>
+            <p class="eyebrow" id="modeEyebrow">Lost report</p>
+            <h1 id="flowTitle">Tell us about the pet</h1>
+          </div>
+        </header>
+
+        <div class="workspace-grid">
+          <section class="chat-panel" aria-label="Report chatbox">
+            <div class="message-list" id="messageList" aria-live="polite"></div>
+
+            <form class="report-form" id="reportForm">
+              <div class="form-topline">
+                <label class="image-picker" for="petImage">
+                  <input id="petImage" type="file" accept="image/*">
+                  <span class="upload-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M12 16V4"></path>
+                      <path d="m7 9 5-5 5 5"></path>
+                      <path d="M5 20h14"></path>
+                    </svg>
+                  </span>
+                  <span>
+                    <strong>Upload image</strong>
+                    <small id="imageStatus">No image selected</small>
+                  </span>
+                </label>
+
+                <div class="field compact-field">
+                  <label for="species">Pet type</label>
+                  <select id="species">
+                    <option value="">Any</option>
+                    <option value="dog">Dog</option>
+                    <option value="cat">Cat</option>
+                    <option value="rabbit">Rabbit</option>
+                    <option value="bird">Bird</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="description">Description</label>
+                <textarea id="description" rows="5" placeholder="Color, breed, collar, location, date, behavior, and any clear markings"></textarea>
+              </div>
+
+              <div class="detail-grid">
+                <div class="field">
+                  <label for="area">Last seen area</label>
+                  <input id="area" type="text" placeholder="Neighborhood or street">
+                </div>
+                <div class="field">
+                  <label for="contact">Contact</label>
+                  <input id="contact" type="text" placeholder="Phone or email">
+                </div>
+              </div>
+
+              <p class="form-error" id="formError" role="alert"></p>
+
+              <button class="primary-action" type="submit">
+                <span id="submitLabel">Finish and search</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14"></path>
+                  <path d="m13 6 6 6-6 6"></path>
+                </svg>
+              </button>
+            </form>
+          </section>
+
+          <aside class="preview-panel" aria-label="Uploaded image preview">
+            <div class="preview-frame" id="previewFrame">
+              <img id="previewImage" alt="">
+              <div class="empty-preview" id="emptyPreview">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 5h16v14H4z"></path>
+                  <path d="m4 15 4-4 4 4 3-3 5 5"></path>
+                  <circle cx="15.5" cy="9.5" r="1.5"></circle>
+                </svg>
+                <span>Image preview</span>
+              </div>
+            </div>
+            <div class="preview-notes">
+              <h2>Best match clues</h2>
+              <ul>
+                <li>Clear face and body markings</li>
+                <li>Collar color, tag, or harness</li>
+                <li>Street, park, or cross street</li>
+                <li>Approximate date and time</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="results-view view" data-view="results" aria-labelledby="resultsTitle">
+        <header class="report-header">
+          <button class="icon-button" type="button" data-action="edit" aria-label="Edit report">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 18 9 12l6-6"></path>
+            </svg>
+          </button>
+          <div>
+            <p class="eyebrow" id="resultsEyebrow">Match results</p>
+            <h1 id="resultsTitle">Similar pet profiles</h1>
+          </div>
+          <button class="secondary-action" type="button" data-action="home">New search</button>
+        </header>
+
+        <div class="results-layout">
+          <article class="submission-card" aria-label="Submitted report">
+            <div class="submitted-image">
+              <img id="submittedImage" alt="">
+              <div class="submitted-placeholder" id="submittedPlaceholder">No image</div>
+            </div>
+            <div>
+              <p class="eyebrow" id="submittedMode">Your report</p>
+              <h2 id="submittedTitle">Report summary</h2>
+              <p id="submittedText"></p>
+            </div>
+          </article>
+
+          <section class="matches-section" aria-label="Similar pet matches">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">Existing profiles</p>
+                <h2 id="matchCount">0 matches</h2>
+              </div>
+              <button class="secondary-action" type="button" id="sortToggle">Sort by newest</button>
+            </div>
+            <div class="match-grid" id="resultsGrid"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

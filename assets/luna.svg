@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#edf1f5"/>
+      <stop offset="1" stop-color="#dff4f0"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <path d="M250 230 210 100l125 65q65-35 130 0l125-65-40 130q55 60 45 145-18 155-195 155T205 375q-10-85 45-145Z" fill="#9ea9ad"/>
+  <path d="M250 230 225 145l82 42" fill="#c7d0d2"/>
+  <path d="M550 230 575 145l-82 42" fill="#c7d0d2"/>
+  <ellipse cx="330" cy="318" rx="34" ry="40" fill="#94d16c"/>
+  <ellipse cx="470" cy="318" rx="34" ry="40" fill="#94d16c"/>
+  <circle cx="330" cy="318" r="12" fill="#17211f"/>
+  <circle cx="470" cy="318" r="12" fill="#17211f"/>
+  <path d="M400 360 372 392h56Z" fill="#c78386"/>
+  <path d="M360 417q40 30 80 0" fill="none" stroke="#3e4a48" stroke-width="10" stroke-linecap="round"/>
+  <path d="M250 372h-95M258 412h-90M550 372h95M542 412h90" stroke="#6f7b7f" stroke-width="10" stroke-linecap="round"/>
+</svg>
