@@ -226,10 +226,19 @@ h2 {
   margin-bottom: 0;
 }
 
-.source-note p:last-child {
+.source-note div {
   max-width: 760px;
+}
+
+.source-note p:last-child {
   color: var(--muted);
   line-height: 1.45;
+}
+
+.database-status {
+  margin-top: 6px;
+  color: #315d57;
+  font-weight: 750;
 }
 
 .snapshot-heading {

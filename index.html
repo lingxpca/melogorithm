@@ -16,7 +16,7 @@
           </div>
           <div class="status-pill" aria-label="Open reports">
             <span class="status-dot"></span>
-            42 active reports
+            <span id="activeReportCount">Loading records</span>
           </div>
         </header>
 
@@ -59,7 +59,10 @@
 
         <section class="source-note" aria-label="Demo sample source">
           <p class="eyebrow">Sample data</p>
-          <p>PawBoost-style demo listings are modeled from public lost and found listing fields. Real PawBoost photos, contact details, and user-submitted reports are not copied.</p>
+          <div>
+            <p>PawBoost-style demo listings are modeled from public lost and found listing fields. Real PawBoost photos, contact details, and user-submitted reports are not copied.</p>
+            <p class="database-status" id="databaseStatus">Local browser database is loading saved reports.</p>
+          </div>
         </section>
       </section>
 

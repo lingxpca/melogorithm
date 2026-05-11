@@ -233,10 +233,19 @@ const colorWords = [
   "green"
 ];
 
+const DB_NAME = "petmatch-records";
+const DB_VERSION = 1;
+const DB_STORE = "reports";
+const seedProfileCount = lostProfiles.length + foundReports.length;
+
 const state = {
   mode: "lost",
   imageUrl: "",
   imageName: "",
+  imageFile: null,
+  savedRecords: [],
+  dbReady: false,
+  dbError: "",
   lastResults: [],
   sortedByScore: true
 };
@@ -264,6 +273,8 @@ const elements = {
   contact: document.querySelector("#contact"),
   formError: document.querySelector("#formError"),
   submitLabel: document.querySelector("#submitLabel"),
+  activeReportCount: document.querySelector("#activeReportCount"),
+  databaseStatus: document.querySelector("#databaseStatus"),
   resultsEyebrow: document.querySelector("#resultsEyebrow"),
   resultsTitle: document.querySelector("#resultsTitle"),
   submittedImage: document.querySelector("#submittedImage"),
@@ -283,15 +294,34 @@ function setView(name) {
 }
 
 function renderMiniProfiles() {
-  elements.miniProfiles.innerHTML = lostProfiles.slice(0, 4).map((profile) => `
+  const savedLostProfiles = state.savedRecords
+    .filter((record) => record.mode === "lost")
+    .map(recordToProfile);
+  const profiles = [...savedLostProfiles, ...lostProfiles].slice(0, 4);
+
+  elements.miniProfiles.innerHTML = profiles.map((profile) => `
     <article class="mini-profile">
-      <img src="${profile.image}" alt="${profile.name}, ${profile.type}">
+      <img src="${escapeHtml(profile.image)}" alt="${escapeHtml(profile.name)}, ${escapeHtml(profile.type)}">
       <div>
-        <strong>${profile.name}</strong>
-        <span>${profile.area}</span>
+        <strong>${escapeHtml(profile.name)}</strong>
+        <span>${escapeHtml(profile.area)}</span>
       </div>
     </article>
   `).join("");
+}
+
+function updateDatabaseStatus() {
+  const total = seedProfileCount + state.savedRecords.length;
+  elements.activeReportCount.textContent = `${total} active profiles`;
+
+  if (state.dbError) {
+    elements.databaseStatus.textContent = "Local browser database is unavailable, so new reports will not persist after refresh.";
+    return;
+  }
+
+  const savedCount = state.savedRecords.length;
+  const recordText = savedCount === 1 ? "1 saved report" : `${savedCount} saved reports`;
+  elements.databaseStatus.textContent = `Local browser database ready: ${recordText} stored on this device.`;
 }
 
 function startFlow(mode) {
@@ -323,6 +353,7 @@ function clearImagePreview() {
 
   state.imageUrl = "";
   state.imageName = "";
+  state.imageFile = null;
   elements.imageStatus.textContent = "No image selected";
   elements.previewFrame.classList.remove("has-image");
   elements.previewImage.removeAttribute("src");
@@ -348,6 +379,7 @@ function handleImageUpload(event) {
 
   state.imageUrl = URL.createObjectURL(file);
   state.imageName = file.name;
+  state.imageFile = file;
   elements.imageStatus.textContent = file.name;
   elements.previewImage.src = state.imageUrl;
   elements.previewImage.alt = `Uploaded image: ${file.name}`;
@@ -373,6 +405,78 @@ function addBotMessage(title, text) {
   elements.messageList.scrollTop = elements.messageList.scrollHeight;
 }
 
+function openDatabase() {
+  if (!("indexedDB" in window)) {
+    state.dbError = "IndexedDB is not supported in this browser.";
+    updateDatabaseStatus();
+    return Promise.resolve(null);
+  }
+
+  return new Promise((resolve) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(DB_STORE)) {
+        const store = db.createObjectStore(DB_STORE, { keyPath: "id" });
+        store.createIndex("mode", "mode", { unique: false });
+        store.createIndex("species", "species", { unique: false });
+        store.createIndex("createdAt", "createdAt", { unique: false });
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => {
+      state.dbError = request.error ? request.error.message : "Could not open the local database.";
+      updateDatabaseStatus();
+      resolve(null);
+    };
+  });
+}
+
+function getAllRecords(db) {
+  if (!db) {
+    return Promise.resolve([]);
+  }
+
+  return new Promise((resolve) => {
+    const request = db.transaction(DB_STORE, "readonly").objectStore(DB_STORE).getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => {
+      state.dbError = request.error ? request.error.message : "Could not read saved reports.";
+      resolve([]);
+    };
+  });
+}
+
+function saveRecord(db, record) {
+  if (!db) {
+    return Promise.resolve(false);
+  }
+
+  return new Promise((resolve) => {
+    const request = db.transaction(DB_STORE, "readwrite").objectStore(DB_STORE).put(record);
+    request.onsuccess = () => resolve(true);
+    request.onerror = () => {
+      state.dbError = request.error ? request.error.message : "Could not save this report.";
+      resolve(false);
+    };
+  });
+}
+
+function fileToDataUrl(file) {
+  if (!file) {
+    return Promise.resolve("");
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error || new Error("Could not read image file."));
+    reader.readAsDataURL(file);
+  });
+}
+
 function normalizeText(value) {
   return value.trim().toLowerCase();
 }
@@ -382,6 +486,53 @@ function tokenize(value) {
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
     .filter(Boolean);
+}
+
+function extractColors(...values) {
+  const tokens = new Set(tokenize(values.filter(Boolean).join(" ")));
+  return colorWords.filter((color) => tokens.has(color) || (color === "gray" && tokens.has("grey")));
+}
+
+function getFallbackImage(mode, type) {
+  if (mode === "found") {
+    if (type === "cat") {
+      return "assets/found-gray-cat.svg";
+    }
+    return "assets/found-gold-dog.svg";
+  }
+
+  if (type === "cat") {
+    return "assets/luna.svg";
+  }
+  return "assets/milo.svg";
+}
+
+function recordToProfile(record) {
+  const type = record.species || "other";
+  const reportDate = record.createdAt
+    ? new Date(record.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+    : "Saved report";
+
+  return {
+    id: record.id,
+    name: record.mode === "lost" ? "Saved lost report" : "Saved found report",
+    type,
+    colors: record.colors || extractColors(record.description, record.area),
+    area: record.area || "Area not listed",
+    date: `Saved ${reportDate}`,
+    image: record.imageDataUrl || getFallbackImage(record.mode, type),
+    source: "Saved locally",
+    description: record.description || "Image-only report saved in the local browser database.",
+    contact: record.contact || ""
+  };
+}
+
+function getSearchPool(mode) {
+  const savedProfiles = state.savedRecords
+    .filter((record) => record.mode === (mode === "lost" ? "found" : "lost"))
+    .map(recordToProfile);
+
+  return [...modeCopy[mode].pool, ...savedProfiles];
 }
 
 function scoreProfile(profile, submission) {
@@ -451,7 +602,7 @@ function validateSubmission(submission) {
   return "";
 }
 
-function handleSubmit(event) {
+async function handleSubmit(event) {
   event.preventDefault();
   const submission = buildSubmission();
   const error = validateSubmission(submission);
@@ -463,9 +614,38 @@ function handleSubmit(event) {
 
   const shortText = submission.description || "Image-only report";
   addUserMessage(shortText);
-  addBotMessage("Searching profiles", "Comparing pet type, colors, area clues, and image availability against existing reports.");
+  addBotMessage("Saving and searching", "Saving this report to the local browser database, then comparing pet type, colors, area clues, and image availability against existing reports.");
 
-  const results = modeCopy[state.mode].pool
+  let imageDataUrl = "";
+  try {
+    imageDataUrl = await fileToDataUrl(state.imageFile);
+  } catch (readError) {
+    elements.formError.textContent = "The report was not saved because the image could not be read.";
+    return;
+  }
+
+  const record = {
+    id: `${submission.mode}-${Date.now()}`,
+    mode: submission.mode,
+    species: submission.species || "other",
+    description: submission.description,
+    area: submission.area,
+    contact: submission.contact,
+    imageName: submission.imageName,
+    imageDataUrl,
+    colors: extractColors(submission.description, submission.area),
+    createdAt: new Date().toISOString()
+  };
+
+  const db = await openDatabase();
+  const saved = await saveRecord(db, record);
+  if (saved) {
+    state.savedRecords = [record, ...state.savedRecords.filter((item) => item.id !== record.id)];
+    updateDatabaseStatus();
+    renderMiniProfiles();
+  }
+
+  const results = getSearchPool(state.mode)
     .map((profile) => scoreProfile(profile, submission))
     .sort((a, b) => b.score - a.score);
 
@@ -506,19 +686,19 @@ function renderMatchGrid(results) {
   elements.sortToggle.textContent = state.sortedByScore ? "Sort by newest" : "Sort by best match";
   elements.resultsGrid.innerHTML = displayResults.map((profile) => `
     <article class="match-card">
-      <img src="${profile.image}" alt="${profile.name}, ${profile.type}">
+      <img src="${escapeHtml(profile.image)}" alt="${escapeHtml(profile.name)}, ${escapeHtml(profile.type)}">
       <div class="match-body">
         <div class="match-topline">
-          <h3>${profile.name}</h3>
+          <h3>${escapeHtml(profile.name)}</h3>
           <span class="score">${profile.score}%</span>
         </div>
         <div class="match-meta">
-          <span>${titleCase(profile.type)}</span>
-          <span>${profile.area}</span>
-          <span>${profile.date}</span>
-          ${profile.source ? `<span>${profile.source}</span>` : ""}
+          <span>${escapeHtml(titleCase(profile.type))}</span>
+          <span>${escapeHtml(profile.area)}</span>
+          <span>${escapeHtml(profile.date)}</span>
+          ${profile.source ? `<span>${escapeHtml(profile.source)}</span>` : ""}
         </div>
-        <p>${profile.description}</p>
+        <p>${escapeHtml(profile.description)}</p>
         <button class="contact-button" type="button">Open profile</button>
       </div>
     </article>
@@ -527,6 +707,27 @@ function renderMatchGrid(results) {
 
 function titleCase(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+async function initializeApp() {
+  renderMiniProfiles();
+  updateDatabaseStatus();
+
+  const db = await openDatabase();
+  state.savedRecords = await getAllRecords(db);
+  state.savedRecords.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  state.dbReady = Boolean(db);
+  updateDatabaseStatus();
+  renderMiniProfiles();
 }
 
 document.querySelectorAll("[data-mode]").forEach((button) => {
@@ -546,4 +747,4 @@ elements.sortToggle.addEventListener("click", () => {
   renderMatchGrid(state.lastResults);
 });
 
-renderMiniProfiles();
+initializeApp();
